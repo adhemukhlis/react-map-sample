@@ -132,7 +132,8 @@ class Map extends Component {
 					justifyContent: 'space-evenly',
 					bottom: 10,
 					width: "50vw",
-					height: "10vh", // backgroundColor: "#00f" }}>
+					height: "10vh"
+				}}>
 					<button onClick={( ) => this.init_place_1( )}>place 1</button>
 					<button onClick={( ) => this.init_place_2( )}>place 2</button>
 				</div>
