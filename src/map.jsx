@@ -1,216 +1,119 @@
 import React, { Component } from 'react';
+import { mounting_script } from "./funclib/load-script";
+import { get_gps_location } from "./funclib/gps";
+import { place_data_parser } from "./funclib/place-data-parser";
+import { get_place_name_by_id } from "./funclib/search-obj";
+import { places_type } from "./config/config-project";
 import MARKER_IMG from "./img/map/my_marker.png";
-import { map_style } from "./config/config_map";
-import { dummy_fc, dummy_ti, dummy_user, dummy_user2 } from "./dummy/loc_dummy";
-import { dummy_loc } from "./config/config_project";
-let map,
-	marker_tmp,
-	infow_tmp;
-let loaded_place_1 = false,
-	loaded_place_2 = false;
-let infow_flag = 0;
-let arrmarkerpositionindex = 0;
-let arrmarkerposition = [ ];
-let mark_object = [ ];
-let marks_place_1 = [ ];
-let marks_place_2 = [ ];
+import { map_setting, info_window_content } from "./config/config-map";
+import { dummy_fc, dummy_ti, dummy_user, dummy_loc } from "./dummy/loc-dummy";
+let user_marker,
+	winfowindow_tmp;
+let infowindow_flag;
+let arr_marker_position_index = 0;
+let arr_marker_position = [ ];
+let marker_tmp = [ ];
 class Map extends Component {
 	state = {
 		user_loc: null
 	};
 	componentWillMount( ) {
-		const script2 = document.createElement( "script" );
-		script2.src = "https://rawcdn.githack.com/adhemukhlis/react-map-sample/fcedf3898be4663b4ffef2b87ffb49c0dbce87f7/src/js/exclude.js";
-		const script = document.createElement( "script" );
-		script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB56WOzpBWhLD6hkIdIZgpOplSz_1pm1mk";
-		script.async = true;
-		script.defer = true;
-		document
-			.body
-			.appendChild( script2 );
-		document
-			.body
-			.appendChild( script );
-		// const script2 = document.createElement( "script" );
-		// script2.src = "https://github.com/adhemukhlis/react-map-sample/blob/master/src/js/exclude.js";
-		// script.async = true;
-		// script.defer = true;
-		// document
-		// 	.body
-		// 	.appendChild( script2 )
+		mounting_script( )
 	}
 	componentDidMount( ) {
-		if ( navigator.geolocation ) {
-			navigator
-				.geolocation
-				.getCurrentPosition( this.set_position )
-		} else {
-			console.log( "Geolocation is not supported by this browser." )
-		}
-		dummy_fc.forEach(element => {
-			console.log( element.id );
-			let tmp = {
-				coord: {
-					lat: parseFloat( element.lat ),
-					lng: parseFloat( element.lng )
-				},
-				label: element.label,
-				place_type: element.place_type,
-				verified: element.verified
-			};
-			marks_place_1.push( tmp )
-		});
-		dummy_ti.forEach(element => {
-			console.log( element.id );
-			let tmp = {
-				coord: {
-					lat: parseFloat( element.lat ),
-					lng: parseFloat( element.lng )
-				},
-				label: element.label,
-				place_type: element.place_type,
-				verified: element.verified
-			};
-			marks_place_2.push( tmp )
-		});
-		console.log( marks_place_2 )
+		get_gps_location( this.set_position )
 	}
 	set_position = ( position ) => {
-		var pos = {
+		let pos = {
 			lat: position.coords.latitude,
 			lng: position.coords.longitude
 		};
-		console.log( pos );
 		this.setState({
 			user_loc: dummy_loc
 				? dummy_user
 				: pos
 		});
-		let timeout = setTimeout( ( ) => {
+		window.setTimeout( ( ) => {
 			this.load_map( this.state.user_loc )
-		}, 3000 );
+		}, 1000 )
 	}
 	load_map = ( position ) => {
 		window.map = new window
 			.google
 			.maps
-			.Map(document.getElementById( 'map' ), {
-				center: position,
-				zoom: 16,
-				mapTypeControl: false,
-				fullscreenControl: false,
-				scaleControl: false,
-				streetViewControl: false,
-				styles: map_style,
-				zoomControl: true,
-				zoomControlOptions: {
-					position: window.google.maps.ControlPosition.RIGHT_CENTER
-				}
-			});
+			.Map(document.getElementById( 'map' ), map_setting( position ));
 		this.set_user_marker_position( position )
 	}
 	set_user_marker_position = ( position ) => {
-		var marker = new window
+		user_marker = new window
 			.google
 			.maps
-			.Marker({ position: position, map: window.map, title: 'Lokasi Anda', icon: MARKER_IMG });
-		marker_tmp = marker
+			.Marker({ position: position, map: window.map, title: 'Lokasi Anda', icon: MARKER_IMG })
 	}
 	init_place_1 = ( ) => {
-		arrmarkerpositionindex = 0;
-		arrmarkerposition = [ ];
-		this.load_place_1( )
+		this.load_place(place_data_parser( dummy_fc ))
 	}
 	init_place_2 = ( ) => {
-		arrmarkerpositionindex = 0;
-		arrmarkerposition = [ ];
-		this.load_place_2( )
+		this.load_place(place_data_parser( dummy_ti ))
 	}
-	load_place_1 = ( ) => {
-		if ( mark_object.length > 0 ) {
-			this.delete_all_Markers( marks_place_1.length )
+	load_place = ( place_data ) => {
+		arr_marker_position_index = 0;
+		arr_marker_position = [ ];
+		if ( marker_tmp.length > 0 ) {
+			this.clear_place_marker( )
 		}
-		for ( var i = 0; i < marks_place_1.length; i += 1 ) {
-			this.addMarkers( marks_place_1[i], i * 200 )
-		}
+		place_data.map(( data, i ) => this.add_place_marker( data, i * 140 ))
 	}
-	load_place_2 = ( ) => {
-		if ( mark_object.length > 0 ) {
-			this.delete_all_Markers( marks_place_2.length )
-		}
-		for ( var i = 0; i < marks_place_2.length; i += 1 ) {
-			this.addMarkers( marks_place_2[i], i * 200 )
-		}
-	}
-	addMarkers = ( pro, timeout ) => {
+	add_place_marker = ( data, timeout ) => {
 		window.setTimeout( ( ) => {
-			var marker2 = new window
+			let marker = new window
 				.google
 				.maps
-				.Marker({ position: pro.coord, map: window.map, title: pro.label, animation: window.google.maps.Animation.DROP });
-			this.label_name( marker2, pro.label, pro.place_type, pro.verified );
-			mark_object.push( marker2 )
+				.Marker({ position: data.coord, map: window.map, title: data.label, animation: window.google.maps.Animation.DROP });
+			this.label_name( marker, data.label, data.place_type, data.verified );
+			marker_tmp.push( marker )
 		}, timeout )
 	}
 	label_name = ( marker, place_name, k_place_type, k_verified ) => {
-		console.log( marker );
-		let place_type = null;
-		if ( k_place_type == 'ti' ) {
-			place_type = 'Tempat Ibadah'
-		} else if ( k_place_type == 'pom' ) {
-			place_type = 'SPBU'
-		} else if ( k_place_type == 'fc' ) {
-			place_type = 'Fotocopy'
-		} else if ( k_place_type == 'rs' ) {
-			place_type = 'Rumah Sakit'
-		}
-		this.setmarkerposarr(marker.getPosition( ));
-		let verified_status;
-		if ( k_verified == 0 ) {
-			verified_status = 'Untrusted'
-		} else {
-			verified_status = 'Trusted'
-		}
-		console.log(this.get_markerposition( arrmarkerpositionindex ).lat( ));
-		let contentString = '   <div>         <h6>' + place_type + '</h6>             <h3 >' + place_name + '</h3>             <ul>                 <li><h5>' + verified_status + '</h5></li>                 <li>kami menyarankan untuk pengguna untuk memilih tempat yang terpercaya</li>             </ul>  <button onclick="proses({lat:' + dummy_user.lat + ',lng:' + dummy_user.lng + '},{lat:' + this
-			.get_markerposition( arrmarkerpositionindex )
-			.lat( ) + ',lng:' + this
-			.get_markerposition( arrmarkerpositionindex )
-			.lng( ) + '} );">nav</button>  </div>  ';
-		console.log(this.get_markerposition( arrmarkerpositionindex ));
-		arrmarkerpositionindex += 1;
+		const place_type = get_place_name_by_id( k_place_type, places_type, 'type_name' );
+		this.set_marker_position_arr(marker.getPosition( ));
+		const verified_status = parseInt( k_verified ) === 0
+			? 'Untrusted'
+			: 'Trusted';
+		let infowindow_content = info_window_content(place_name, place_type, verified_status, dummy_user, this.get_marker_position( arr_marker_position_index ));
+		arr_marker_position_index += 1;
 		let infowindow = new window
 			.google
 			.maps
-			.InfoWindow({ content: contentString, maxWidth: 1000 });
+			.InfoWindow({ content: infowindow_content, maxWidth: 1000 });
 		marker.addListener('click', ( ) => {
-			if ( infow_flag == 1 ) {
-				this.change_infoWindow( infow_tmp )
+			if ( infowindow_flag ) {
+				this.change_infowindow( winfowindow_tmp )
 			}
 			infowindow.open( marker.get( 'map' ), marker );
-			this.push_infoWindow( infowindow );
-			infow_flag = 1
+			this.push_infowindow( infowindow );
+			infowindow_flag = true
 		})
 	}
-	get_markerposition = ( i ) => {
-		return arrmarkerposition[i]
+	get_marker_position = ( i ) => {
+		const result = {
+			lat: arr_marker_position[i].lat( ),
+			lng: arr_marker_position[i].lng( )
+		};
+		return result
 	}
-	push_infoWindow = ( infow ) => {
-		infow_tmp = infow
+	push_infowindow = ( val ) => {
+		winfowindow_tmp = val
 	}
-	setmarkerposarr = ( posnew ) => {
-		arrmarkerposition.push( posnew );
-		console.log( posnew )
+	set_marker_position_arr = ( pos ) => {
+		arr_marker_position.push( pos )
 	}
-	change_infoWindow = ( infowindow ) => {
+	change_infowindow = ( infowindow ) => {
 		infowindow.setMap( null )
 	}
-	delete_all_Markers = ( length_o ) => {
-		var content = mark_object.length;
-		for ( var i = 0; i < content; i += 1 ) {
-			mark_object[i].setMap( null )
-		}
-		mark_object = [ ]
+	clear_place_marker = ( ) => {
+		marker_tmp.map(data => data.setMap( null ));
+		marker_tmp = [ ]
 	}
 	render( ) {
 		return (
@@ -229,9 +132,7 @@ class Map extends Component {
 					justifyContent: 'space-evenly',
 					bottom: 10,
 					width: "50vw",
-					height: "10vh",
-					backgroundColor: "#00f"
-				}}>
+					height: "10vh", // backgroundColor: "#00f" }}>
 					<button onClick={( ) => this.init_place_1( )}>place 1</button>
 					<button onClick={( ) => this.init_place_2( )}>place 2</button>
 				</div>

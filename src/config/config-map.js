@@ -1,3 +1,17 @@
+export const info_window_content = ( place_name, place_type, verified_status, origin, destination ) => ( '<div style="width:40vh;display:flex;flex-direction:column;"><h2>' + place_name + '</h2><br/><small>' + place_type + '</small><b>' + verified_status + '</b><i>kami menyarankan untuk pengguna untuk memilih tempat yang terpercaya</i><button onclick="proses({lat:' + origin.lat + ',lng:' + origin.lng + '},{lat:' + destination.lat + ',lng:' + destination.lng + '} );">arah</button></div>' );
+export const map_setting = position => ({
+	center: position,
+	zoom: 16,
+	mapTypeControl: false,
+	fullscreenControl: false,
+	scaleControl: false,
+	streetViewControl: false,
+	styles: map_style,
+	zoomControl: true,
+	zoomControlOptions: {
+		position: window.google.maps.ControlPosition.RIGHT_CENTER
+	}
+});
 export const map_style = [
 	{
 		elementType: 'geometry',
