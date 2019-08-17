@@ -19,20 +19,25 @@ class Map extends Component {
 		user_loc: null
 	};
 	componentWillMount( ) {
+		const script2 = document.createElement( "script" );
+		script2.src = "https://rawcdn.githack.com/adhemukhlis/react-map-sample/fcedf3898be4663b4ffef2b87ffb49c0dbce87f7/src/js/exclude.js";
 		const script = document.createElement( "script" );
 		script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB56WOzpBWhLD6hkIdIZgpOplSz_1pm1mk";
 		script.async = true;
 		script.defer = true;
 		document
 			.body
-			.appendChild( script );
-		const script2 = document.createElement( "script" );
-		script.src = "";
-		// script.async = true;
-		// script.defer = true;
+			.appendChild( script2 );
 		document
 			.body
-			.appendChild( script )
+			.appendChild( script );
+		// const script2 = document.createElement( "script" );
+		// script2.src = "https://github.com/adhemukhlis/react-map-sample/blob/master/src/js/exclude.js";
+		// script.async = true;
+		// script.defer = true;
+		// document
+		// 	.body
+		// 	.appendChild( script2 )
 	}
 	componentDidMount( ) {
 		if ( navigator.geolocation ) {

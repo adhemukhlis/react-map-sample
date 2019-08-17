@@ -1,16 +1,16 @@
-var map;
-var route_tmp = 0;
-var directionsDisplay;
-var directionsService;
-function proses( ori, des ) {       
-	if ( route_tmp == 1 ) {
-		change_route( )
-	}
-	directionsDisplay = new window.google.maps.DirectionsRenderer;
-	directionsService = new window.google.maps.DirectionsService;
+var map,
+	route_set,
+	directionsDisplay,
+	directionsService;
+function proses( ori, des ) {
+	route_set
+		? change_route( )
+		: null;
+	directionsDisplay = new google.maps.DirectionsRenderer;
+	directionsService = new google.maps.DirectionsService;
 	directionsDisplay.setMap( map );
 	calculateAndDisplayRoute( directionsService, directionsDisplay, ori, des );
-	route_tmp = 1
+	route_set = true
 }
 function change_route( ) {
 	directionsDisplay.setMap( null )
@@ -20,7 +20,7 @@ function calculateAndDisplayRoute( directionsService, directionsDisplay, pos, de
 		.route({
 			origin: pos,
 			destination: des,
-			travelMode: window.google.maps.TravelMode['DRIVING']
+			travelMode: google.maps.TravelMode['DRIVING']
 		}, function ( response, status ) {
 			if ( status == 'OK' ) {
 				directionsDisplay.setDirections( response )
