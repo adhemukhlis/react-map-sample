@@ -5,5 +5,9 @@ export const places_type = [
 	}, {
 		type_name: 'Fotocopy',
 		id: 'fc'
+	},
+	{
+		type_name: 'SPBU',
+		id: 'pom'
 	}
 ];
